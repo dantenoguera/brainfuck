@@ -1,0 +1,52 @@
+\documentclass[a4paper, 12pt]{article}
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[backend=bibtex]{biblatex}
+\addbibresource{referencias.bib}
+\title{Int\'erprete de Brainfuck en Haskell}
+\author{Dante Noguera}
+\date{}
+
+\begin{document}
+
+
+\section*{Introducción}
+
+Brainfuck es un lenguaje de programación esotérico, diseñado por Urban Müller en 1993 inspirado por la Máquina de Turing y el lenguaje FALSE.
+Se creó con la inteción de que sea simple para tener un compilador menor en tamaño que el de FALSE \footnote{El compilador de FALSE era de 1024 bytes, el de Brainfuck resultó en un tamaño de 240 bytes luego reducido a 200 bytes.} y Turing completo \cite{w}. 
+Para esto Müller consideró las siguientes reducciones \cite{y}:
+\begin{itemize}
+	\item Todos los operadores pueden ser expresados por incrementos y decrementos.
+	\item Todos los números pueden ser expresados como incrementos de cero.
+	\item Todas las variables pueden ser expresadas como posiciones en un stack.
+	\item Lambda cálculo puede ser reemplazado por while \footnote{Müller se refierer en específico al lambda cálculo presente FALSE.}.
+\end{itemize}
+
+
+\section*{Diseño}
+
+Un programa en Brainfuck consta de una cinta dividida en celdas inicializadas en cero y un puntero móvil que puede leer y escribir en las celdas. Además se tienen los siguientes comandos:
+
+\begin{center}
+\begin{tabular}{ |l|l|l| } 
+ \hline
+ Comando & Descripción \\
+ \hline
+ \textgreater & Mover el puntero una posición a la derecha \\ 
+ \textless & Mover el puntero una posición a la izquierda \\ 
+ + & Incrementar byte apuntado \\ 
+ - & Decrementar byte apuntado \\ 
+ . & Escribir byte apuntado en stdout \\ 
+ , & Leer byte de stdin y almacenarlo en byte apuntado \\ 
+ $[$ & Iterar mientras byte apuntado sea distinto de cero \\ 
+ $]$ & Fin de bloque de interación \\ 
+ \hline
+\end{tabular}
+\end{center}
+
+
+\nocite{*}
+\printbibliography
+
+
+\end{document}
