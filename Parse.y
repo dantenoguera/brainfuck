@@ -90,7 +90,7 @@ lexer cont s = case s of
                     (']' : cs) -> cont TRBracket cs
                     (_ : cs) -> lexer cont cs
               
-exp_parse s = parseExp s 1
+bfparser s = parseExp s 1
 }
 
 

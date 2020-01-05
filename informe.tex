@@ -25,7 +25,7 @@ Para esto Müller consideró las siguientes reducciones \cite{y}:
 
 \section*{Diseño}
 
-Un programa en Brainfuck consta de una cinta dividida en celdas inicializadas en cero y un puntero móvil que puede leer y escribir en las celdas. Además se tienen los siguientes comandos:
+Un programa en Brainfuck consta de una secuencia de comandos ejecutados secuencialmente que operan sobre una máquina. Los componenetes de dicha máquina son: un arreglo inicializado en cero, un puntero móvil inicializado en el primer byte del arreglo y dos streams de bytes de entrada y salida respectivamente.
 
 \begin{center}
 \begin{tabular}{ |l|l|l| } 
@@ -43,6 +43,12 @@ Un programa en Brainfuck consta de una cinta dividida en celdas inicializadas en
  \hline
 \end{tabular}
 \end{center}
+
+
+
+
+\section*{Módulos}
+
 
 
 \nocite{*}
