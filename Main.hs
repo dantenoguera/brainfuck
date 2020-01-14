@@ -5,10 +5,12 @@ import System.Console.Readline
 import Data.List
 import Data.Char
 import System.IO hiding (print)
+import System.Environment
 import Common
 --import PrettyPrinter
 import Eval
 import Parse
+size = 10
 
 data Command = Compile CompileForm
              | Print String
@@ -48,8 +50,8 @@ readEvalPrintLoop = do
                         resp <- handleCommand cmd
                         case resp of
                             Quit -> return ()
-                            _    -> putStrLn $ show cmd
-                        readEvalPrintLoop
+                            _    -> do putStrLn $ show cmd
+                                       readEvalPrintLoop
 
 interpretCommand :: String -> IO Command
 interpretCommand str =
@@ -81,8 +83,13 @@ handleCommand cmd =
 
 compilePhrase :: String -> IO ()
 compilePhrase s = do
-    p <- parseIO "<interactive>" parseProg s
-    evalProg p 
+    maybep <- parseIO "<interactive>" parserProg s
+    case maybep of
+        Nothing -> return ()
+        Just p -> do r <- evalProg p size
+                     case r of
+                        Raise str -> putStrLn str
+                        Return m -> putStrLn $ show m
 
 
 
@@ -91,3 +98,9 @@ helpTxt cs =
        unlines (map (\ (Cmd c a _ d) ->
                      let  ct = concat (intersperse ", " (map (++ if null a then "" else " " ++ a) c))
                      in   ct ++ replicate ((24 - length ct) `max` 2) ' ' ++ d) cs)
+
+parseIO :: String -> (String -> ParseResult a) -> String -> IO (Maybe a)
+parseIO f p x = case p x of
+                    Failed e  -> do putStrLn (f++": "++e)
+                                    return Nothing
+                    Ok r      -> return (Just r)
