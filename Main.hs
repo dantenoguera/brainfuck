@@ -2,21 +2,23 @@
 module Main where
 import Prelude hiding (print)
 import System.Console.Readline
+import Control.Exception (catch,IOException)
+import Control.Monad.Except
 import Data.List
 import Data.Char
 import System.IO hiding (print)
 import System.Environment
 import Common
---import PrettyPrinter
+import Data.Word
+import PrettyPrinter
 import Eval
 import Parse
-size = 10
+
 
 data Command = Compile CompileForm
-             | Print String
+             | Dump
              | Recompile
              | Quit
-             | Continue
              | Help
              | Noop
              deriving Show
@@ -25,8 +27,17 @@ data CompileForm = CompileInteractive  String
                  | CompileFile         String
                  deriving Show
 
+data State = S { inter :: Bool,       -- True, si estamos en modo interactivo.
+                 lfile :: String,     -- Ultimo archivo cargado (para hacer "reload")
+                 lmachine :: Machine Word8  -- Ultima maquina que se corrio
+               }
 
 data InteractiveCommand = Cmd [String] String (String -> Command) String
+
+size = 30000 --tamaño de la cinta (bytes)
+
+ioExceptionCatcher :: IOException -> IO (Maybe a)
+ioExceptionCatcher _ = return Nothing
 
 commands :: [InteractiveCommand]
 commands =
@@ -34,24 +45,40 @@ commands =
                                 "Cargar un programa desde un archivo",
       Cmd [":reload"]      "<file>"  (const Recompile) "Volver a cargar el último archivo",
       Cmd [":quit"]        ""        (const Quit)   "Salir del intérprete",
-      Cmd [":help",":?"]   ""        (const Help)   "Mostrar esta lista de comandos" ]
+      Cmd [":help",":?"]   ""        (const Help)   "Mostrar esta lista de comandos",
+      Cmd [":dump"]       "" (const Dump) "Escribe en un archivo dump.txt la cinta de la última máquina que se corrió"]
 
 main :: IO ()
-main = readEvalPrintLoop
+main = do args <- getArgs
+          readevalprint args (S True "" (mkMachine size))
 
 
-readEvalPrintLoop :: IO ()
-readEvalPrintLoop = do
-    maybeLine <- readline "Bf> "
-    case maybeLine of
-        Nothing     -> return () -- EOF / control-d
-        Just line -> do addHistory line
-                        cmd <- interpretCommand line
-                        resp <- handleCommand cmd
-                        case resp of
-                            Quit -> return ()
-                            _    -> do putStrLn $ show cmd
-                                       readEvalPrintLoop
+readevalprint :: [String] -> State -> IO ()
+readevalprint args state@(S {..}) =
+    let rec st =
+          do
+            mx <- catch
+                   (if inter
+                    then readline "Bf> "
+                    else fmap Just getLine)
+                    ioExceptionCatcher
+            case mx of
+              Nothing   ->  return ()
+              Just ""   ->  rec st
+              Just x    ->
+                do
+                  when inter (addHistory x)
+                  c   <- interpretCommand x
+                  st' <- handleCommand st c
+                  maybe (return ()) rec st'
+    in
+      do
+        state' <- compileFiles args state
+        when inter $ putStrLn ("Intérprete de " ++ "Brainfuck.\n" ++
+                               "Escriba :? para recibir ayuda.")
+        --  enter loop
+        rec state' {inter=True}
+
 
 interpretCommand :: String -> IO Command
 interpretCommand str =
@@ -68,33 +95,54 @@ interpretCommand str =
              _   ->  do  putStrLn ("Comando ambigüo, podría ser " ++
                                    concat (intersperse ", " [ head cs | Cmd cs _ _ _ <- matching ]) ++ ".")
                          return Noop
-
      else
        return (Compile (CompileInteractive str))
 
-handleCommand :: Command -> IO Command
-handleCommand cmd =
+handleCommand :: State -> Command -> IO (Maybe State)
+handleCommand st@(S {..}) cmd =
     case cmd of
-        Quit -> return Quit
-        Help -> putStr (helpTxt commands) >> return Continue
-        Compile c -> case c of
-            CompileInteractive s -> compilePhrase s >> return Continue
-            _ -> return Continue
+        Quit -> return Nothing
+        Help -> putStr (helpTxt commands) >> return (Just st)
+        Compile c -> do st' <- case c of
+                                CompileInteractive s -> compilePhrase s st
+                                CompileFile f -> compileFile (st {lfile=f}) f
+                        return (Just st')
+        Dump -> dumpTape lmachine >> return (Just st)
 
-compilePhrase :: String -> IO ()
-compilePhrase s = do
+compilePhrase :: String -> State -> IO State
+compilePhrase s st = do
     maybep <- parseIO "<interactive>" parserProg s
-    case maybep of
-        Nothing -> return ()
-        Just p -> do r <- evalProg p size
-                     case r of
-                        Raise str -> putStrLn str
-                        Return m -> putStrLn $ show m
+    maybe (return st) (handleProg st) maybep
+    
 
+handleProg :: State -> Prog -> IO State
+handleProg st@(S {..}) p = do r <- evalProg p size
+                              case r of
+                                 Raise str -> putStrLn str >> return st
+                                 Return m@(Machine _ c _) -> putStrLn (show c) >>
+                                                             return (st {lmachine=m})
 
+compileFile :: State -> String -> IO State
+compileFile st f = do
+    putStrLn ("Abriendo "++f++"...")
+    let f'= reverse(dropWhile isSpace (reverse f))
+    catch (do x <- readFile f'
+              maybep <- parseIO f' parserProg x
+              maybe (return st) (handleProg st) maybep)
+          (\e -> do let err = show (e :: IOException)
+                    hPutStr stderr ("No se pudo abrir el archivo " ++ f' ++ ": " ++ err ++"\n")
+                    return st)
 
+compileFiles :: [String] -> State -> IO State
+compileFiles [] s      = return s
+compileFiles (x:xs) s  = do s' <- compileFile (s {lfile=x, inter=False}) x
+                            compileFiles xs s'
+
+    
 helpTxt :: [InteractiveCommand] -> String
-helpTxt cs =
+helpTxt cs 
+    =  "Lista de comandos: cualquier comando puede ser abreviado a :c donde\n" ++
+       "c es el primer caracter del nombre completo.\n\n" ++
        unlines (map (\ (Cmd c a _ d) ->
                      let  ct = concat (intersperse ", " (map (++ if null a then "" else " " ++ a) c))
                      in   ct ++ replicate ((24 - length ct) `max` 2) ' ' ++ d) cs)

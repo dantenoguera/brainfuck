@@ -1,6 +1,7 @@
 module Eval where
 import Common
 import Data.Word
+import Data.Char
 import Control.Monad.Trans.Class
 
 evalComm :: Comm -> Machine Word8 -> OperateMachineT IO (Machine Word8)
@@ -11,7 +12,7 @@ evalComm IncP (Machine _ _ []) = pointE
 evalComm IncP (Machine ls c (r : rs)) = return (Machine (c : ls) r rs)
 evalComm IncB (Machine ls c rs) = return (Machine ls (c + 1) rs)
 evalComm DecB (Machine ls c rs) = return (Machine ls (c - 1) rs)
-evalComm W (Machine ls c rs) = do lift (putStrLn (show c))
+evalComm W (Machine ls c rs) = do lift $ putStr [chr (fromEnum c)]
                                   return (Machine ls c rs)
 evalComm R (Machine ls c rs) = do w <- lift getLine
                                   return (Machine ls (read w) rs)
