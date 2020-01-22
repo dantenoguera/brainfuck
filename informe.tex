@@ -2,6 +2,7 @@
 \usepackage[spanish]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage[backend=bibtex]{biblatex}
+\usepackage[breaklinks=true]{hyperref}
 \addbibresource{referencias.bib}
 \title{Int\'erprete de Brainfuck en Haskell}
 \author{Dante Noguera}
@@ -23,7 +24,7 @@ Para esto Müller consideró las siguientes reducciones \cite{y}:
 \end{itemize}
 
 
-\section*{Diseño}
+\section*{Brainfuck}
 
 Un programa en Brainfuck consta de una secuencia de comandos ejecutados secuencialmente que operan sobre una máquina. Los componenetes de dicha máquina son: un arreglo inicializado en cero, un puntero móvil inicializado en el primer byte del arreglo y dos streams de bytes de entrada y salida respectivamente.
 
@@ -36,23 +37,57 @@ Un programa en Brainfuck consta de una secuencia de comandos ejecutados secuenci
  \textless & Mover el puntero una posición a la izquierda \\ 
  + & Incrementar byte apuntado \\ 
  - & Decrementar byte apuntado \\ 
- . & Escribir byte apuntado en stream de salida\\ 
- , & Leer byte del stream de entrada y almacenarlo en byte apuntado \\ 
+ . & Escribir byte apuntado en salida\\ 
+ , & Leer byte de la entrada y almacenarlo en byte apuntado \\ 
  $[$ & Iterar mientras byte apuntado sea distinto de cero \\ 
  $]$ & Fin de bloque de interación \\ 
  \hline
 \end{tabular}
 \end{center}
 
+\section*{El intérprete}
 
+En la carpeta src se encuentran los archivos correspondientes al intérprete. Para probar inicialmente el intérprete,
+ejecutar ghci Main.hs. El intérprete requiere tener instalado el paquete readline. \\
+Los archivos en la carpeta tienen la siguientes funcionalidades:
+\begin{itemize}
+	\item Common.hs: define los tipos de datos utilizados durante la interpretación.
+	\item Main.hs: provee la funcionalidad de entrada y salida del intérprete.
+	\item Eval.hs: provee el evaluador.
+	\item Parse.y: Especifica la gramática en BNF y provee el lexer. Con este archivo se genera el módulo Parse.hs. Pa-
+	ra generar el módulo se utiliza Happy \url{http://www.haskell.org/happy/}. Para generar el módulo Parse.hs
+	se ejecuta el comando happy Parse.y.
+	\item Parse.hs
+\end{itemize}
 
 
 \section*{Módulos}
+Happy \\
+Data.Int \\
+Control.Applicative (Applicative(..)) \\
+Control.Monad (liftM, ap) \\
+Control.Monad.Trans.Class \\
+Data.Word \\
+Data.List \\
+System.Console.Readline
+Control.Exception (catch,IOException)
+Control.Monad.Except
+Data.Char
+System.IO hiding (print)
+System.Environment
 
 
 
+%\begin{center}
+%\begin{tabular}{ |l|l|l| } 
+% \hline
+% Nombre & Uso
+% \hline
+% Data.Word & 
+%\end{tabular}
+%\end{center}
+
+\newpage
 \nocite{*}
-\printbibliography
-
-
+\printbibliography[title={Referencias}]
 \end{document}
