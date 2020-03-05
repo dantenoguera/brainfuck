@@ -6,9 +6,9 @@ import Control.Monad.Trans.Class
 import Data.Word
 
 -- Para calmar GHC--
-instance Monad m => Functor (OperateMachineT m) where
+instance Monad m => Functor (OperateMachine m) where
     fmap = liftM
-instance Monad m => Applicative (OperateMachineT m) where
+instance Monad m => Applicative (OperateMachine m) where
     pure = return
     (<*>) = ap
 --------------------
@@ -28,23 +28,23 @@ data Machine a = Machine [a] a [a] deriving Show
 
 data Error a = Raise String | Return a deriving Show
 
-mkMachine :: Int -> Machine Word8
-mkMachine size = Machine [] 0 (replicate (size - 1) 0)
+size = 30000
 
-newtype OperateMachineT m a = OperateMachineT { runOperateMachineT :: m (Error a) }
+mkMachine :: Machine Word8
+mkMachine = Machine [] 0 (replicate (size - 1) 0)
 
-instance Monad m => Monad (OperateMachineT m) where
-    return x = OperateMachineT (return (Return x))
-    m >>= f  = OperateMachineT $ do errval <- runOperateMachineT m
-                                    case errval of
+newtype OperateMachine m a = OperateMachine { runOperateMachine :: m (Error a) }
+
+instance Monad m => Monad (OperateMachine m) where
+    return x = OperateMachine (return (Return x))
+    m >>= f  = OperateMachine $ do errval <- runOperateMachine m
+                                   case errval of
                                         Raise e  -> return (Raise e)
-                                        Return x -> runOperateMachineT (f x)
+                                        Return x -> runOperateMachine (f x)
 
-instance MonadTrans OperateMachineT where
-    lift = OperateMachineT . (liftM Return)
+instance MonadTrans OperateMachine where
+    lift = OperateMachine . (liftM Return)
 
-pointE :: Monad m => OperateMachineT m a
-pointE = OperateMachineT $ return (Raise "Pointer out of bounds")
-
-sizeE :: IO (Error a)
-sizeE = return (Raise "Invalid Size")
+pointE, readE :: Monad m => OperateMachine m a
+pointE = OperateMachine $ return (Raise "Puntero fuera de límites")
+readE = OperateMachine $ return (Raise "Error de lectura")

@@ -8,9 +8,8 @@ import Data.List
 import Data.Char
 import System.IO hiding (print)
 import System.Environment
-import Common
 import Data.Word
-import PrettyPrinter
+import Common
 import Eval
 import Parse
 
@@ -34,8 +33,6 @@ data State = S { inter :: Bool,       -- True, si estamos en modo interactivo.
 
 data InteractiveCommand = Cmd [String] String (String -> Command) String
 
-size = 30000 --tamaño de la cinta (bytes)
-
 ioExceptionCatcher :: IOException -> IO (Maybe a)
 ioExceptionCatcher _ = return Nothing
 
@@ -44,13 +41,13 @@ commands =
     [ Cmd [":load"]        "<file>"  (Compile . CompileFile)
                                 "Cargar un programa desde un archivo",
       Cmd [":reload"]      "<file>"  (const Recompile) "Volver a cargar el último archivo",
-      Cmd [":quit"]        ""        (const Quit)   "Salir del intérprete",
+      Cmd [":dump"]       "" (const Dump) "Escribe en un archivo dump.txt la cinta de la última máquina que se corrió",
       Cmd [":help",":?"]   ""        (const Help)   "Mostrar esta lista de comandos",
-      Cmd [":dump"]       "" (const Dump) "Escribe en un archivo dump.txt la cinta de la última máquina que se corrió"]
+      Cmd [":quit"]        ""        (const Quit)   "Salir del intérprete"]
 
 main :: IO ()
 main = do args <- getArgs
-          readevalprint args (S True "" (mkMachine size))
+          readevalprint args (S True "" mkMachine )
 
 
 readevalprint :: [String] -> State -> IO ()
@@ -87,7 +84,7 @@ interpretCommand str =
                t             = dropWhile isSpace t'
            let  matching  =  filter (\ (Cmd cs _ _ _) -> any (isPrefixOf cmd) cs) commands
            case matching of
-             []  ->  do  putStrLn ("Comando desconocido `" ++
+             []  ->  do  putStrLn ("Comando desconocido '" ++
                                    cmd                     ++
                                    "'. Escriba :? para recibir ayuda.")
                          return Noop
@@ -101,12 +98,17 @@ interpretCommand str =
 handleCommand :: State -> Command -> IO (Maybe State)
 handleCommand st@(S {..}) cmd =
     case cmd of
+        Noop -> return (Just st)
         Quit -> return Nothing
         Help -> putStr (helpTxt commands) >> return (Just st)
         Compile c -> do st' <- case c of
                                 CompileInteractive s -> compilePhrase s st
                                 CompileFile f -> compileFile (st {lfile=f}) f
                         return (Just st')
+        Recompile -> if null lfile
+                      then putStrLn "No hay un archivo cargado.\n" >>
+                           return (Just st)
+                      else handleCommand st (Compile (CompileFile lfile))
         Dump -> dumpTape lmachine >> return (Just st)
 
 compilePhrase :: String -> State -> IO State
@@ -116,10 +118,10 @@ compilePhrase s st = do
 
 
 handleProg :: State -> Prog -> IO State
-handleProg st@(S {..}) p = do r <- evalProg p size
+handleProg st@(S {..}) p = do r <- evalProg p 
                               case r of
                                  Raise str -> putStrLn str >> return st
-                                 Return m@(Machine _ c _) -> putStrLn (show c) >>
+                                 Return m@(Machine _ c _) -> putStrLn ("\nByte apuntado: " ++ show c) >>
                                                              return (st {lmachine=m})
 
 compileFile :: State -> String -> IO State
@@ -160,7 +162,7 @@ dumpTape (Machine ls c rs) =
     let memtab = (mkTable ((reverse ls) ++
                                    [c]  ++
                                    rs) 0 12)
-    in writeFile "dump.txt" ("Pointer: " ++
+    in writeFile "dump.txt" ("Valor puntero: " ++
                         show (length ls) ++
                        "\n" ++ memtab)
 mkTable _ 30000 _ = ""

@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[backend=bibtex]{biblatex}
 \usepackage[breaklinks=true]{hyperref}
+\usepackage{ amssymb }
 \addbibresource{referencias.bib}
 \title{Int\'erprete de Brainfuck en Haskell}
 \author{Dante Noguera}
@@ -14,19 +15,19 @@
 \section*{Introducción}
 
 Brainfuck es un lenguaje de programación esotérico, diseñado por Urban Müller en 1993 inspirado por la Máquina de Turing y el lenguaje FALSE.
-Se creó con la inteción de que sea simple para tener un compilador menor en tamaño que el de FALSE \footnote{El compilador de FALSE era de 1024 bytes, el de Brainfuck resultó en un tamaño de 240 bytes luego reducido a 200 bytes.} y Turing completo \cite{w}. 
+El objetivo era que sea simple, lograr un compilador menor en tamaño que el de FALSE \footnote{El compilador de FALSE era de 1024 bytes, el de Brainfuck resultó en un tamaño de 240 bytes luego reducido a 200 bytes.} y Turing completo. 
 Para esto Müller consideró las siguientes reducciones \cite{y}:
 \begin{itemize}
 	\item Todos los operadores pueden ser expresados por incrementos y decrementos.
 	\item Todos los números pueden ser expresados como incrementos de cero.
 	\item Todas las variables pueden ser expresadas como posiciones en un stack.
-	\item Lambda cálculo puede ser reemplazado por while \footnote{Müller se refierer en específico al lambda cálculo presente FALSE.}.
+	\item Las funciones anónimas pueden ser reemplazadas por bucles while.
 \end{itemize}
 
 
 \section*{Brainfuck}
 
-Un programa en Brainfuck consta de una secuencia de comandos ejecutados secuencialmente que operan sobre una máquina. Los componenetes de dicha máquina son: un arreglo inicializado en cero, un puntero móvil inicializado en el primer byte del arreglo y dos streams de bytes de entrada y salida respectivamente.
+Un programa en Brainfuck consta de una lista de comandos ejecutados secuencialmente que operan sobre una máquina virtual. Los componenetes de dicha máquina son: un arreglo inicializado en cero de 30000 bytes, un puntero móvil inicializado en el primer byte del arreglo y dos streams de bytes de entrada y salida respectivamente.
 
 \begin{center}
 \begin{tabular}{ |l|l|l| } 
@@ -38,54 +39,57 @@ Un programa en Brainfuck consta de una secuencia de comandos ejecutados secuenci
  + & Incrementar byte apuntado \\ 
  - & Decrementar byte apuntado \\ 
  . & Escribir byte apuntado en salida\\ 
- , & Leer byte de la entrada y almacenarlo en byte apuntado \\ 
- $[$ & Iterar mientras byte apuntado sea distinto de cero \\ 
+ , & Leer byte de la entrada y almacenar en byte apuntado \\ 
+ $[$ & Iterar mientras el byte apuntado sea distinto de cero \\ 
  $]$ & Fin de bloque de interación \\ 
  \hline
 \end{tabular}
 \end{center}
 
-\section*{El intérprete}
+\section*{Intérprete}
 
-En la carpeta src se encuentran los archivos correspondientes al intérprete. Para probar inicialmente el intérprete,
-ejecutar ghci Main.hs. El intérprete requiere tener instalado el paquete readline. \\
-Los archivos en la carpeta tienen la siguientes funcionalidades:
+
+En la carpeta src se encuentran los archivos correspondientes al intérprete. Para lanzarlo
+ejecutar \textbf{ghci Main.hs} ,o \textbf{ghc Main.hs} y  \textbf{Main.hs}. \\
+Archivos en src:
 \begin{itemize}
-	\item Common.hs: define los tipos de datos utilizados durante la interpretación.
-	\item Main.hs: provee la funcionalidad de entrada y salida del intérprete.
-	\item Eval.hs: provee el evaluador.
-	\item Parse.y: Especifica la gramática en BNF y provee el lexer. Con este archivo se genera el módulo Parse.hs. Pa-
+	\item \textbf{Common.hs}: define los tipos de datos utilizados durante la interpretación.
+	\item \textbf{Main.hs}: provee la funcionalidad de entrada y salida del intérprete.
+	\item \textbf{Eval.hs}: provee el evaluador.
+	\item \textbf{Parse.y}: especifica la gramática en BNF y lexer. Con este archivo se genera el módulo Parse.hs. Pa
 	ra generar el módulo se utiliza Happy \url{http://www.haskell.org/happy/}. Para generar el módulo Parse.hs
 	se ejecuta el comando happy Parse.y.
-	\item Parse.hs
+	\item \textbf{Parse.hs}.
+	\item \textbf{progs}: contiene programas escritos en Branfuck.
 \end{itemize}
 
 
+
+
 \section*{Módulos}
-Happy \\
-Data.Int \\
-Control.Applicative (Applicative(..)) \\
-Control.Monad (liftM, ap) \\
-Control.Monad.Trans.Class \\
-Data.Word \\
-Data.List \\
-System.Console.Readline
-Control.Exception (catch,IOException)
-Control.Monad.Except
-Data.Char
-System.IO hiding (print)
-System.Environment
 
 
-
-%\begin{center}
-%\begin{tabular}{ |l|l|l| } 
-% \hline
-% Nombre & Uso
-% \hline
-% Data.Word & 
-%\end{tabular}
-%\end{center}
+\begin{center}
+\begin{tabular}{ |l|l| } 
+ \hline
+ Nombre & Archivo(s) \\
+ \hline
+ Data.Word & Common - Eval - Main \\
+ Data.Char & Eval - Main \\
+ Data.Int & Common \\
+ Data.List & Main \\
+ Text.Read & Eval \\
+ Control.Monad & Common \\
+ Control.Monad.Except & Main \\ 
+ Control.Monad.Trans.Class & Common - Eval \\
+ Control.Applicative & Common \\
+ Control.Exception & Main \\ 
+ System.IO & Main \\ 
+ System.Console.Readline & Main \\ 
+ System.Environment & Main \\ 
+ \hline
+\end{tabular}
+\end{center}
 
 \newpage
 \nocite{*}
