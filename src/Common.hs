@@ -29,19 +29,17 @@ data Machine a = Machine [a] a [a] deriving Show
 
 data Error a = Raise String | Return a deriving Show
 
-size = 30000
-
 mkMachine :: Machine Word8
-mkMachine = Machine [] 0 (replicate (size - 1) 0)
+mkMachine = Machine [] 0 (replicate 29999 0)
 
 newtype OperateMachine m a = OperateMachine { runOperateMachine :: m (Error a) }
 
 instance Monad m => Monad (OperateMachine m) where
-    return x = OperateMachine (return (Return x))
+    return x = OperateMachine $ return $ Return x
     m >>= f  = OperateMachine $ do errval <- runOperateMachine m
                                    case errval of
-                                        Raise e  -> return (Raise e)
-                                        Return x -> runOperateMachine (f x)
+                                        Raise e  -> return $ Raise e
+                                        Return x -> runOperateMachine $ f x
 
 instance MonadTrans OperateMachine where
     lift = OperateMachine . (liftM Return)
@@ -49,3 +47,4 @@ instance MonadTrans OperateMachine where
 pointE, readE :: Monad m => OperateMachine m a
 pointE = OperateMachine $ return (Raise "Puntero fuera de límites")
 readE = OperateMachine $ return (Raise "Error de lectura")
+
