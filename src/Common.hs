@@ -1,9 +1,10 @@
 module Common where
 import Data.Int
+import Data.Word
 import Control.Applicative (Applicative(..))
 import Control.Monad (liftM, ap)
 import Control.Monad.Trans.Class
-import Data.Word
+
 
 -- Para calmar GHC--
 instance Monad m => Functor (OperateMachine m) where

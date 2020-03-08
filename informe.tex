@@ -17,7 +17,7 @@
 \section*{Introducción}
 
 Brainfuck es un lenguaje de programación esotérico, diseñado por Urban Müller en 1993 inspirado por la Máquina de Turing y el lenguaje FALSE.
-El objetivo era que sea simple, lograr un compilador menor en tamaño que el de FALSE \footnote{El compilador de FALSE era de 1024 bytes, el de Brainfuck resultó en un tamaño de 240 bytes luego reducido a 200 bytes.} y Turing completo. 
+Se quizo que sea simple, tener un compilador menor que el de FALSE \footnote{El compilador de FALSE era de 1024 bytes, el de Brainfuck resultó en un tamaño de 240 bytes luego reducido a 200 bytes.} y Turing completo. 
 Para esto Müller consideró las siguientes reducciones \cite{y}:
 \begin{itemize}
 	\item Todos los operadores pueden ser expresados por incrementos y decrementos.
@@ -29,7 +29,7 @@ Para esto Müller consideró las siguientes reducciones \cite{y}:
 
 \section*{Brainfuck}
 
-Un programa en Brainfuck consta de una lista de comandos ejecutados secuencialmente que operan sobre una máquina virtual. Los componenetes de dicha máquina son: un arreglo inicializado en cero de 30000 bytes, un puntero móvil inicializado en el primer byte del arreglo y dos streams de bytes de entrada y salida respectivamente.
+Un programa en Brainfuck es una lista de comandos ejecutados secuencialmente que operan sobre una máquina virtual. Los componenetes de dicha máquina son: un arreglo inicializado en cero de 30000 bytes, un puntero móvil inicializado en el primer byte del arreglo y dos streams de bytes de entrada y salida.
 
 \begin{center}
 \begin{tabular}{ |l|l|l| } 
@@ -52,28 +52,27 @@ Cualquier otro caracter es ignorado.
 \section*{Intérprete}
 
 \subsection*{Estructura}
-En la carpeta src se encuentran los archivos correspondientes al intérprete. Para lanzarlo
-ejecutar \textbf{ghci Main.hs} ,o \textbf{ghc Main.hs} y \textbf{Main.hs}. Luego llamar a la función \textbf{main}. \\
-Archivos en src:
+En la carpeta \textbf{src} se encuentran los archivos correspondientes al intérprete. Para lanzarlo
+ejecutar \textbf{ghci Main.hs} y \textbf{main},o \textbf{ghc Main.hs} y \textbf{./Main}. \\
+Archivos en \textbf{src}:
 \begin{itemize}
 	\item \textbf{Common.hs}: define los tipos de datos utilizados durante la interpretación.
 	\item \textbf{Main.hs}: provee la funcionalidad de entrada y salida del intérprete.
 	\item \textbf{Eval.hs}: provee el evaluador.
-	\item \textbf{Parse.y}: especifica la gramática en BNF y lexer. Con este archivo se genera el módulo Parse.hs. Pa
-	ra generar el módulo se utiliza Happy \url{http://www.haskell.org/happy/}. Para generar el módulo Parse.hs
-	se ejecuta el comando happy Parse.y.
+	\item \textbf{Parse.y}: especifica la gramática en BNF y lexer. Con este archivo se genera el módulo \textbf{Parse.hs} ejecutando \textbf{happy Parse.y}.
+	Happy: \url{http://www.haskell.org/happy/},  
 	\item \textbf{Parse.hs}.
 \end{itemize}
-En la carpeta ejemplos se pueden encontrar programas para correr en el intérprete. \\
+
+En la carpeta \textbf{ejemplos} se pueden encontrar programas para correr en el intérprete. \\
 
 
 \subsection*{Decisiones de diseño}
 \begin{itemize}
-	\item Cada vez que se corre un programa se lo hace sobre una nueva máquina.
-	\item El tamaño de la cinta o arreglo es 30000 bytes.
-	\item Solo se pueden leer enteros. Si el entero es mayor a un bytes se le aplica $mod 256$. Ejemplo: 256
+	\item Cada programa se corre sobre una nueva máquina.
+	\item Solo se pueden leer enteros. Si el entero es mayor a un byte se le aplica $mod 256$. Ejemplo: 256
 	se lee como 0, 1000 como 232, -1 como 255. El EOL es una excepción, cuando se lee se inserta 0 en el byte apuntado.
-	\item . imprime en código ASCII.
+	\item El comando . imprime en código ASCII.
 	\item Al final se muestra el último valor apuntado.
 \end{itemize}
 
@@ -83,7 +82,6 @@ En la carpeta ejemplos se pueden encontrar programas para correr en el intérpre
 \end{figure}
 
 \subsection*{Errores}
-Errores que pueden aparecer durante la evaluación:
 \begin{center}
 \begin{tabular}{ |l|l|l| } 
  \hline
@@ -121,6 +119,11 @@ Errores que pueden aparecer durante la evaluación:
  \hline
 \end{tabular}
 \end{center}
+
+Las librerías \textbf{Control.Monad.Except}, \textbf{Control.Monad.Trans.Class} y \textbf{System.Console.Readline} no pertenecen a \textbf{base} deben instalarse aparte.
+
+
+
 
 \newpage
 \nocite{*}
