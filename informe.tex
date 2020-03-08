@@ -52,6 +52,7 @@ Cualquier otro caracter es ignorado.
 \section*{Intérprete}
 
 \subsection*{Estructura}
+
 En la carpeta \textbf{src} se encuentran los archivos correspondientes al intérprete. Para lanzarlo
 ejecutar \textbf{ghci Main.hs} y \textbf{main},o \textbf{ghc Main.hs} y \textbf{./Main}. \\
 Archivos en \textbf{src}:
@@ -60,7 +61,7 @@ Archivos en \textbf{src}:
 	\item \textbf{Main.hs}: provee la funcionalidad de entrada y salida del intérprete.
 	\item \textbf{Eval.hs}: provee el evaluador.
 	\item \textbf{Parse.y}: especifica la gramática en BNF y lexer. Con este archivo se genera el módulo \textbf{Parse.hs} ejecutando \textbf{happy Parse.y}.
-	Happy: \url{http://www.haskell.org/happy/},  
+	Happy: \url{http://www.haskell.org/happy/}.
 	\item \textbf{Parse.hs}.
 \end{itemize}
 
@@ -68,10 +69,11 @@ En la carpeta \textbf{ejemplos} se pueden encontrar programas para correr en el 
 
 
 \subsection*{Decisiones de diseño}
+
 \begin{itemize}
 	\item Cada programa se corre sobre una nueva máquina.
-	\item Solo se pueden leer enteros. Si el entero es mayor a un byte se le aplica $mod 256$. Ejemplo: 256
-	se lee como 0, 1000 como 232, -1 como 255. El EOL es una excepción, cuando se lee se inserta 0 en el byte apuntado.
+	\item Solo se pueden leer enteros. Si el entero es mayor a un byte se le aplica $mod 256$. Por ejemplo 256
+	se lee como 0, 1000 como 232, -1 como 255. EOL es una excepción, cuando se lee se inserta 0 en el byte apuntado.
 	\item El comando . imprime en código ASCII.
 	\item Al final se muestra el último valor apuntado.
 \end{itemize}
@@ -82,6 +84,7 @@ En la carpeta \textbf{ejemplos} se pueden encontrar programas para correr en el 
 \end{figure}
 
 \subsection*{Errores}
+
 \begin{center}
 \begin{tabular}{ |l|l|l| } 
  \hline
@@ -95,9 +98,8 @@ En la carpeta \textbf{ejemplos} se pueden encontrar programas para correr en el 
 \end{center}
 
 
-
-
 \section*{Librerías}
+
 \begin{center}
 \begin{tabular}{ |l|l| } 
  \hline
@@ -121,9 +123,6 @@ En la carpeta \textbf{ejemplos} se pueden encontrar programas para correr en el 
 \end{center}
 
 Las librerías \textbf{Control.Monad.Except}, \textbf{Control.Monad.Trans.Class} y \textbf{System.Console.Readline} no pertenecen a \textbf{base} deben instalarse aparte.
-
-
-
 
 \newpage
 \nocite{*}
