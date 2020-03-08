@@ -47,7 +47,7 @@ commands =
 
 main :: IO ()
 main = do args <- getArgs
-          readevalprint args (S True "" mkMachine )
+          readevalprint args (S True "" mkMachine)
 
 
 readevalprint :: [String] -> State -> IO ()
