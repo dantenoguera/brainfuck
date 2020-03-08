@@ -35,16 +35,16 @@ mkMachine = Machine [] 0 (replicate 29999 0)
 newtype OperateMachine m a = OperateMachine { runOperateMachine :: m (Error a) }
 
 instance Monad m => Monad (OperateMachine m) where
-    return x = OperateMachine $ return $ Return x
+    return = OperateMachine . return . Return
     m >>= f  = OperateMachine $ do errval <- runOperateMachine m
                                    case errval of
                                         Raise e  -> return $ Raise e
                                         Return x -> runOperateMachine $ f x
 
 instance MonadTrans OperateMachine where
-    lift = OperateMachine . (liftM Return)
+    lift = OperateMachine . (liftM  Return)
 
 pointE, readE :: Monad m => OperateMachine m a
-pointE = OperateMachine $ return (Raise "Puntero fuera de límites")
-readE = OperateMachine $ return (Raise "Error de lectura")
+pointE = OperateMachine $ return $ Raise "Puntero fuera de límites"
+readE = OperateMachine $ return $ Raise "Error de lectura"
 
